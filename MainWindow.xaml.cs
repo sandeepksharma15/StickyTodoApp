@@ -31,17 +31,62 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+
+        Loaded += (_, __) => PinToDesktop();
+
         MouseLeftButtonDown += (_, e) =>
         {
             if (e.ButtonState == MouseButtonState.Pressed)
-                DragMove();
+            {
+                var handle = new WindowInteropHelper(this).Handle;
+                NativeMethods.ReleaseCapture();
+                NativeMethods.SendMessage(handle, NativeMethods.WM_NCLBUTTONDOWN, NativeMethods.HTCAPTION, 0);
+            }
         };
+    }
+
+    private void PinToDesktop()
+    {
+        var progman = NativeMethods.FindWindow("Progman", null!);
+
+        // Tell Progman to spawn a WorkerW
+        NativeMethods.SendMessageTimeout(progman, 0x052C, IntPtr.Zero, IntPtr.Zero, 0, 1000, out _);
+
+        IntPtr workerw = IntPtr.Zero;
+        IntPtr temp = IntPtr.Zero;
+
+        // Find the WorkerW behind desktop icons
+        do
+        {
+            workerw = NativeMethods.FindWindowEx(IntPtr.Zero, workerw, "WorkerW", null!);
+
+            IntPtr shellView = NativeMethods.FindWindowEx(workerw, IntPtr.Zero, "SHELLDLL_DefView", null!);
+
+            if (shellView != IntPtr.Zero)
+            {
+                temp = NativeMethods.FindWindowEx(IntPtr.Zero, workerw, "WorkerW", null!);
+                break;
+            }
+        } while (workerw != IntPtr.Zero);
+
+        if (temp != IntPtr.Zero)
+        {
+            var handle = new WindowInteropHelper(this).Handle;
+            NativeMethods.SetParent(handle, temp);
+
+            // push it to bottom so normal windows stay above
+            NativeMethods.SetWindowPos(handle, NativeMethods.HWND_BOTTOM,
+                0, 0, 0, 0,
+                NativeMethods.SWP_NOMOVE | NativeMethods.SWP_NOSIZE | NativeMethods.SWP_NOACTIVATE);
+        }
     }
 
     protected override void OnSourceInitialized(EventArgs e)
     {
         base.OnSourceInitialized(e);
+
         var handleSource = (HwndSource)PresentationSource.FromVisual(this);
+
         handleSource.AddHook(WindowProc);
     }
 
