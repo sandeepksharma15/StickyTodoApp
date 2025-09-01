@@ -9,6 +9,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using StickyTodoApp.Models;
+using StickyTodoApp.ViewModels;
 
 namespace StickyTodoApp;
 
@@ -28,6 +30,8 @@ public partial class MainWindow : Window
 
     private const int WM_NCHITTEST = 0x0084;
 
+    public TodoViewModel ViewModel { get; set; } = new();
+
     public MainWindow()
     {
         InitializeComponent();
@@ -43,6 +47,13 @@ public partial class MainWindow : Window
                 NativeMethods.SendMessage(handle, NativeMethods.WM_NCLBUTTONDOWN, NativeMethods.HTCAPTION, 0);
             }
         };
+
+        DataContext = ViewModel;
+
+        // TEMP: Add sample items for testing
+        ViewModel.AddItem(new TodoItem { Title = "Buy milk", Priority = Priority.Urgent });
+        ViewModel.AddItem(new TodoItem { Title = "Finish report", Priority = Priority.Normal, DueDate = DateTime.Today.AddDays(2) });
+        ViewModel.AddItem(new TodoItem { Title = "Call mom", Priority = Priority.Urgent, DueDate = DateTime.Today });
     }
 
     private void PinToDesktop()
