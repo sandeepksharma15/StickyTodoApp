@@ -6,22 +6,29 @@
         WindowStyle="None"
         ResizeMode="NoResize"
         AllowsTransparency="True"
-        Background="#FFFFF9C4"
+        Background="Transparent"
         ShowInTaskbar="False"
         Topmost="False">
 
     <Border Background="#FFFFF9C4"
-            BorderBrush="#FFD6A76A"
-            BorderThickness="2"
-            CornerRadius="16"
-            Padding="8">
+        BorderBrush="#FFD6A76A"
+        BorderThickness="2"
+        CornerRadius="16"
+        Padding="8">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="15"
+                          Opacity="0.4"
+                          ShadowDepth="3"
+                          Color="Black"/>
+        </Border.Effect>
+
         <Grid>
             <TextBlock Text="Sticky TODO (shell)"
-                       FontSize="18"
-                       FontWeight="Bold"
-                       Foreground="Black"
-                       HorizontalAlignment="Center"
-                       VerticalAlignment="Center"/>
+                   FontSize="18"
+                   FontWeight="Bold"
+                   Foreground="Black"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"/>
         </Grid>
     </Border>
 </Window>
