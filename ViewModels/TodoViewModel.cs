@@ -51,7 +51,13 @@ public class TodoViewModel : INotifyPropertyChanged
         AddCommand = new RelayCommand(_ => AddItem(), _ => !string.IsNullOrWhiteSpace(NewTitle));
 
         LoadItems();
-        Items.CollectionChanged += (_, __) => SaveItems();
+
+        Items.CollectionChanged += (_, __) =>
+        {
+            SaveItems();
+            OnPropertyChanged(nameof(OpenItems));
+            OnPropertyChanged(nameof(DoneItems));
+        };
     }
 
     private void LoadItems()
@@ -72,7 +78,18 @@ public class TodoViewModel : INotifyPropertyChanged
                 }
 
                 foreach (var item in Items)
-                    item.PropertyChanged += (_, __) => SaveItems();
+                {
+                    item.PropertyChanged += (_, e) =>
+                    {
+                        SaveItems();
+
+                        if (e.PropertyName == nameof(TodoItem.IsDone) || e.PropertyName == nameof(TodoItem.Priority) || e.PropertyName == nameof(TodoItem.DueDate))
+                        {
+                            OnPropertyChanged(nameof(OpenItems));
+                            OnPropertyChanged(nameof(DoneItems));
+                        }
+                    };
+                }
             }
         }
         catch { /* log or ignore */ }
@@ -107,7 +124,16 @@ public class TodoViewModel : INotifyPropertyChanged
             DueDate = NewDueDate
         };
 
-        item.PropertyChanged += (_, __) => SaveItems();
+        item.PropertyChanged += (_, e) =>
+        {
+            SaveItems();
+
+            if (e.PropertyName == nameof(TodoItem.IsDone) || e.PropertyName == nameof(TodoItem.Priority) || e.PropertyName == nameof(TodoItem.DueDate))
+            {
+                OnPropertyChanged(nameof(OpenItems));
+                OnPropertyChanged(nameof(DoneItems));
+            }
+        };
 
         Items.Add(item);
 
