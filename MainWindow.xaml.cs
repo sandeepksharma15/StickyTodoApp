@@ -45,11 +45,6 @@ public partial class MainWindow : Window
         MouseLeftButtonDown += MainWindow_MouseLeftButtonDown;
 
         DataContext = ViewModel;
-
-        // TEMP: Add sample items for testing
-        ViewModel.AddItem(new TodoItem { Title = "Buy milk", Priority = Priority.Urgent });
-        ViewModel.AddItem(new TodoItem { Title = "Finish report", Priority = Priority.Normal, DueDate = DateTime.Today.AddDays(2) });
-        ViewModel.AddItem(new TodoItem { Title = "Call mom", Priority = Priority.Urgent, DueDate = DateTime.Today });
     }
 
     private void MainWindow_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)

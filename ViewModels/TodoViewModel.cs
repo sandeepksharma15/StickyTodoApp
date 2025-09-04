@@ -1,18 +1,18 @@
-﻿using StickyTodoApp.Commands;
-using StickyTodoApp.Models;
-using System;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Windows.Input;
+using StickyTodoApp.Commands;
+using StickyTodoApp.Models;
 
 namespace StickyTodoApp.ViewModels;
 
 public class TodoViewModel : INotifyPropertyChanged
 {
     public ObservableCollection<TodoItem> Items { get; set; } = [];
-
-    // Expose enum values for binding (Priority dropdown)
     public IEnumerable<Priority> PriorityValues { get; } = Enum.GetValues<Priority>();
 
     private string? _newTitle;
@@ -49,6 +49,44 @@ public class TodoViewModel : INotifyPropertyChanged
     public TodoViewModel()
     {
         AddCommand = new RelayCommand(_ => AddItem(), _ => !string.IsNullOrWhiteSpace(NewTitle));
+
+        LoadItems();
+        Items.CollectionChanged += (_, __) => SaveItems();
+    }
+
+    private void LoadItems()
+    {
+        try
+        {
+            var path = StorageHelper.GetDataFilePath();
+            if (File.Exists(path))
+            {
+                var json = File.ReadAllText(path);
+                var items = JsonSerializer.Deserialize<ObservableCollection<TodoItem>>(json);
+                if (items != null)
+                {
+                    Items = items;
+                    OnPropertyChanged(nameof(Items));
+                    OnPropertyChanged(nameof(OpenItems));
+                    OnPropertyChanged(nameof(DoneItems));
+                }
+
+                foreach (var item in Items)
+                    item.PropertyChanged += (_, __) => SaveItems();
+            }
+        }
+        catch { /* log or ignore */ }
+    }
+
+    private void SaveItems()
+    {
+        try
+        {
+            var path = StorageHelper.GetDataFilePath();
+            var json = JsonSerializer.Serialize(Items, new JsonSerializerOptions { WriteIndented = true });
+            File.WriteAllText(path, json);
+        }
+        catch { /* log or ignore */ }
     }
 
     public IEnumerable<TodoItem> OpenItems =>
@@ -62,12 +100,16 @@ public class TodoViewModel : INotifyPropertyChanged
     // Adds item from input fields
     private void AddItem()
     {
-        Items.Add(new TodoItem
+        var item = new TodoItem
         {
             Title = NewTitle?.Trim(),
             Priority = NewPriority,
             DueDate = NewDueDate
-        });
+        };
+
+        item.PropertyChanged += (_, __) => SaveItems();
+
+        Items.Add(item);
 
         NewTitle = string.Empty;
         NewPriority = Priority.Normal;
