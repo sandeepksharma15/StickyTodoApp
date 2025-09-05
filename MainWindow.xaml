@@ -96,7 +96,7 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
 
-            <!-- Archived Items (appears above toggle button) -->
+            <!-- Archived Items (appears above buttons) -->
             <Border BorderThickness="1" BorderBrush="#DDD" CornerRadius="6" Padding="6"
                     Visibility="{Binding ShowArchive, Converter={StaticResource BoolToVisibilityConverter}}"
                     Margin="0,8,0,8">
@@ -141,11 +141,17 @@
                 </StackPanel>
             </Border>
 
-            <!-- Archive toggle button at very bottom -->
-            <ToggleButton Content="{Binding ShowArchive, Converter={StaticResource BoolToArchiveTextConverter}}"
-              IsChecked="{Binding ShowArchive}"
-              Margin="0,0,0,6"
-              HorizontalAlignment="Center"/>
+            <!-- Bottom buttons: View/Hide Archived + Clear Archived -->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,6">
+                <ToggleButton Content="{Binding ShowArchive, Converter={StaticResource BoolToArchiveTextConverter}}"
+                              IsChecked="{Binding ShowArchive}"
+                              Margin="0,0,8,0"/>
+                <Button Content="Clear Archived"
+                        Command="{Binding ClearArchiveCommand}"
+                        ToolTip="Remove all archived items permanently"
+                        IsEnabled="{Binding ArchivedItems.Count, Converter={StaticResource CountToVisibilityConverter}, ConverterParameter=Enable}"
+                        />
+            </StackPanel>
         </StackPanel>
     </Border>
 </Window>

@@ -30,6 +30,8 @@ public static class ArchiveService
         var folder = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
             "StickyTodoApp");
+        if (!Directory.Exists(folder))
+            Directory.CreateDirectory(folder);
         return Path.Combine(folder, "archive.json");
     }
 
@@ -53,6 +55,17 @@ public static class ArchiveService
 
             var newJson = JsonSerializer.Serialize(archiveItems, new JsonSerializerOptions { WriteIndented = true });
             File.WriteAllText(path, newJson);
+        }
+        catch { /* log/ignore */ }
+    }
+
+    public static void ClearArchive()
+    {
+        try
+        {
+            var path = GetArchiveFilePath();
+            if (File.Exists(path))
+                File.Delete(path); // simplest: remove file entirely
         }
         catch { /* log/ignore */ }
     }

@@ -52,10 +52,12 @@ public class TodoViewModel : INotifyPropertyChanged
     }
 
     public ICommand AddCommand { get; }
+    public ICommand ClearArchiveCommand { get; }
 
     public TodoViewModel()
     {
         AddCommand = new RelayCommand(_ => AddItem(), _ => !string.IsNullOrWhiteSpace(NewTitle));
+        ClearArchiveCommand = new RelayCommand(_ => ClearArchive(), _ => ArchivedItems.Any());
 
         LoadItems();
         LoadArchive();
@@ -135,7 +137,7 @@ public class TodoViewModel : INotifyPropertyChanged
     public ObservableCollection<TodoItem> ArchivedItems
     {
         get => _archivedItems;
-        set { _archivedItems = value; OnPropertyChanged(nameof(ArchivedItems)); }
+        set { _archivedItems = value; OnPropertyChanged(nameof(ArchivedItems)); (ClearArchiveCommand as RelayCommand)?.RaiseCanExecuteChanged(); }
     }
 
     public void LoadArchive()
@@ -150,8 +152,17 @@ public class TodoViewModel : INotifyPropertyChanged
                 if (loaded != null)
                     ArchivedItems = loaded;
             }
+            (ClearArchiveCommand as RelayCommand)?.RaiseCanExecuteChanged();
         }
         catch { }
+    }
+
+    private void ClearArchive()
+    {
+        ArchiveService.ClearArchive();
+        ArchivedItems.Clear();
+        OnPropertyChanged(nameof(ArchivedItems));
+        (ClearArchiveCommand as RelayCommand)?.RaiseCanExecuteChanged();
     }
 
     // Adds item from input fields
@@ -212,6 +223,7 @@ public class TodoViewModel : INotifyPropertyChanged
             SaveItems();
             OnPropertyChanged(nameof(OpenItems));
             OnPropertyChanged(nameof(DoneItems));
+            LoadArchive();
         }
     }
 
