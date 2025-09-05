@@ -17,7 +17,7 @@ public class TodoViewModel : INotifyPropertyChanged
 
     private string? _newTitle;
     private Priority _newPriority = Priority.Normal;
-    private DateTime? _newDueDate;
+    private DateTime? _newDueDate = DateTime.Today.AddDays(1); // default next day
     private bool _showArchive;
 
     public string? NewTitle
@@ -28,7 +28,7 @@ public class TodoViewModel : INotifyPropertyChanged
             if (_newTitle == value) return;
             _newTitle = value;
             OnPropertyChanged(nameof(NewTitle));
-            // Update Add button enabled state
+            // Update Add command enabled state
             (AddCommand as RelayCommand)?.RaiseCanExecuteChanged();
         }
     }
@@ -190,7 +190,7 @@ public class TodoViewModel : INotifyPropertyChanged
 
         NewTitle = string.Empty;
         NewPriority = Priority.Normal;
-        NewDueDate = null;
+        NewDueDate = DateTime.Today.AddDays(1); // reset to next day default
 
         OnPropertyChanged(nameof(OpenItems));
         OnPropertyChanged(nameof(DoneItems));
