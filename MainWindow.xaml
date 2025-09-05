@@ -42,7 +42,7 @@
                   Margin="6,0,0,0"
                   ItemsSource="{Binding PriorityValues}"
                   SelectedItem="{Binding NewPriority}"
-                  VerticalAlignment="Center"/>                    
+                  VerticalAlignment="Center"/>
                 <DatePicker Width="120"
                     Margin="6,0,0,0"
                     SelectedDate="{Binding NewDueDate}"
@@ -94,6 +94,53 @@
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
+
+            <!-- Archive toggle button -->
+            <ToggleButton Content="{Binding ShowArchive, Converter={StaticResource BoolToArchiveTextConverter}}"
+              IsChecked="{Binding ShowArchive}"
+              Margin="0,8,0,0"
+              HorizontalAlignment="Center"/>
+
+            <!-- Archived Items -->
+            <Border BorderThickness="1" BorderBrush="#DDD" CornerRadius="6" Padding="6"
+                    Visibility="{Binding ShowArchive, Converter={StaticResource BoolToVisibilityConverter}}"
+                    Margin="0,8,0,0">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="150">
+                    <ItemsControl ItemsSource="{Binding ArchivedItems}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" Margin="0,4">
+                                    <TextBlock Text="{Binding Title}"
+                                   Foreground="Gray"/>
+                                    <TextBlock Text="{Binding CompletedOn, StringFormat=' (done {0:dd-MMM})'}"
+                                   Foreground="DarkGray"
+                                   Margin="4,0,0,0"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Border>
+            <TextBlock Text="No archived items"
+                    Foreground="DarkGray"
+                    FontStyle="Italic"
+                    HorizontalAlignment="Center"
+                    Margin="4">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                        <Style.Triggers>
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding ShowArchive}" Value="True"/>
+                                    <Condition Binding="{Binding ArchivedItems.Count}" Value="0"/>
+                                </MultiDataTrigger.Conditions>
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </MultiDataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
         </StackPanel>
     </Border>
 </Window>

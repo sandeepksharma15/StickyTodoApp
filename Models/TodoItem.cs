@@ -15,6 +15,7 @@ public class TodoItem : INotifyPropertyChanged
     private Priority _priority;
     private DateTime? _dueDate;
     private bool _isDone;
+    private DateTime? _completedOn;
 
     public string? Title
     {
@@ -37,7 +38,24 @@ public class TodoItem : INotifyPropertyChanged
     public bool IsDone
     {
         get => _isDone;
-        set { _isDone = value; OnPropertyChanged(nameof(IsDone)); }
+        set
+        {
+            if (_isDone != value)
+            {
+                _isDone = value;
+                if (_isDone)
+                    CompletedOn = DateTime.Now;
+                else
+                    CompletedOn = null;
+                OnPropertyChanged(nameof(IsDone));
+            }
+        }
+    }
+
+    public DateTime? CompletedOn
+    {
+        get => _completedOn;
+        set { _completedOn = value; OnPropertyChanged(nameof(CompletedOn)); }
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;

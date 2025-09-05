@@ -10,6 +10,9 @@
                 <ResourceDictionary Source="Resources.xaml"/>
             </ResourceDictionary.MergedDictionaries>
             <conv:PriorityToFontWeightConverter x:Key="PriorityToFontWeightConverter" />
+            <conv:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+            <conv:BoolToArchiveTextConverter x:Key="BoolToArchiveTextConverter"/>
+            <conv:CountToVisibilityConverter x:Key="CountToVisibilityConverter"/>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

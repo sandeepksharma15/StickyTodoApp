@@ -18,6 +18,7 @@ public class TodoViewModel : INotifyPropertyChanged
     private string? _newTitle;
     private Priority _newPriority = Priority.Normal;
     private DateTime? _newDueDate;
+    private bool _showArchive;
 
     public string? NewTitle
     {
@@ -44,6 +45,12 @@ public class TodoViewModel : INotifyPropertyChanged
         set { _newDueDate = value; OnPropertyChanged(nameof(NewDueDate)); }
     }
 
+    public bool ShowArchive
+    {
+        get => _showArchive;
+        set { _showArchive = value; OnPropertyChanged(nameof(ShowArchive)); }
+    }
+
     public ICommand AddCommand { get; }
 
     public TodoViewModel()
@@ -51,6 +58,7 @@ public class TodoViewModel : INotifyPropertyChanged
         AddCommand = new RelayCommand(_ => AddItem(), _ => !string.IsNullOrWhiteSpace(NewTitle));
 
         LoadItems();
+        LoadArchive();
 
         Items.CollectionChanged += (_, __) =>
         {
@@ -58,6 +66,15 @@ public class TodoViewModel : INotifyPropertyChanged
             OnPropertyChanged(nameof(OpenItems));
             OnPropertyChanged(nameof(DoneItems));
         };
+
+        // Run archive check at startup
+        ArchiveOldDoneItems();
+
+        // Optional: also run periodically (e.g., every 6 hours)
+        var timer = new System.Timers.Timer(TimeSpan.FromHours(6).TotalMilliseconds);
+        timer.Elapsed += (_, __) => ArchiveOldDoneItems();
+        timer.AutoReset = true;
+        timer.Start();
     }
 
     private void LoadItems()
@@ -114,6 +131,29 @@ public class TodoViewModel : INotifyPropertyChanged
     public IEnumerable<TodoItem> DoneItems =>
         Items.Where(i => i.IsDone);
 
+    private ObservableCollection<TodoItem> _archivedItems = new();
+    public ObservableCollection<TodoItem> ArchivedItems
+    {
+        get => _archivedItems;
+        set { _archivedItems = value; OnPropertyChanged(nameof(ArchivedItems)); }
+    }
+
+    public void LoadArchive()
+    {
+        try
+        {
+            var path = ArchiveService.GetArchiveFilePath();
+            if (File.Exists(path))
+            {
+                var json = File.ReadAllText(path);
+                var loaded = JsonSerializer.Deserialize<ObservableCollection<TodoItem>>(json);
+                if (loaded != null)
+                    ArchivedItems = loaded;
+            }
+        }
+        catch { }
+    }
+
     // Adds item from input fields
     private void AddItem()
     {
@@ -152,6 +192,27 @@ public class TodoViewModel : INotifyPropertyChanged
         Items.Add(item);
         OnPropertyChanged(nameof(OpenItems));
         OnPropertyChanged(nameof(DoneItems));
+    }
+
+    private void ArchiveOldDoneItems()
+    {
+        var cutoff = DateTime.Now.AddDays(-14);
+
+        var toArchive = Items
+            .Where(i => i.IsDone && i.CompletedOn.HasValue && i.CompletedOn.Value < cutoff)
+            .ToList();
+
+        if (toArchive.Any())
+        {
+            ArchiveService.AppendToArchive(new ObservableCollection<TodoItem>(toArchive));
+
+            foreach (var item in toArchive)
+                Items.Remove(item);
+
+            SaveItems();
+            OnPropertyChanged(nameof(OpenItems));
+            OnPropertyChanged(nameof(DoneItems));
+        }
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
