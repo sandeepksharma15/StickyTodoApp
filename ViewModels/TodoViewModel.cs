@@ -20,6 +20,29 @@ public class TodoViewModel : INotifyPropertyChanged
     private DateTime? _newDueDate = DateTime.Today.AddDays(1); // default next day
     private bool _showArchive;
 
+    private readonly string[] _themeKeys = ["NoteYellow", "NotePink", "NoteBlue", "NoteGreen"];
+    public IEnumerable<string> ThemeKeys => _themeKeys;
+
+    // Theme handling
+    private string _currentThemeKey = "NoteGreen"; // default
+    public string CurrentThemeKey
+    {
+        get => _currentThemeKey;
+        set
+        {
+            if (_currentThemeKey == value) return;
+            _currentThemeKey = value;
+            OnPropertyChanged(nameof(CurrentThemeKey));
+            OnPropertyChanged(nameof(AvailableThemeKeys));
+        }
+    }
+
+    public IEnumerable<string> AvailableThemeKeys => _themeKeys.Where(k => k != CurrentThemeKey);
+
+    public ICommand AddCommand { get; }
+    public ICommand ClearArchiveCommand { get; }
+    public ICommand ChangeThemeCommand { get; }
+
     public string? NewTitle
     {
         get => _newTitle;
@@ -51,13 +74,11 @@ public class TodoViewModel : INotifyPropertyChanged
         set { _showArchive = value; OnPropertyChanged(nameof(ShowArchive)); }
     }
 
-    public ICommand AddCommand { get; }
-    public ICommand ClearArchiveCommand { get; }
-
     public TodoViewModel()
     {
         AddCommand = new RelayCommand(_ => AddItem(), _ => !string.IsNullOrWhiteSpace(NewTitle));
         ClearArchiveCommand = new RelayCommand(_ => ClearArchive(), _ => ArchivedItems.Any());
+        ChangeThemeCommand = new RelayCommand(key => ChangeTheme(key as string));
 
         LoadItems();
         LoadArchive();
@@ -77,6 +98,12 @@ public class TodoViewModel : INotifyPropertyChanged
         timer.Elapsed += (_, __) => ArchiveOldDoneItems();
         timer.AutoReset = true;
         timer.Start();
+    }
+
+    private void ChangeTheme(string? key)
+    {
+        if (string.IsNullOrWhiteSpace(key)) return;
+        CurrentThemeKey = key;
     }
 
     private void LoadItems()

@@ -13,6 +13,9 @@
             <conv:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
             <conv:BoolToArchiveTextConverter x:Key="BoolToArchiveTextConverter"/>
             <conv:CountToVisibilityConverter x:Key="CountToVisibilityConverter"/>
+            <!-- register converters AFTER resources exist -->
+            <conv:ResourceKeyToBrushConverter x:Key="ResourceKeyToBrushConverter"/>
+            <conv:ThemeKeyToColorConverter x:Key="ThemeKeyToColorConverter"/>
         </ResourceDictionary>
     </Application.Resources>
 </Application>
